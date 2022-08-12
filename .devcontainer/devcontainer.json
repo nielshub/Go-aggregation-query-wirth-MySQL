@@ -7,7 +7,7 @@
 	"context": "..",
 
 	// Update the 'dockerFile' property if you aren't using the standard 'Dockerfile' filename.
-	"dockerFile": "../Dockerfile.dev",
+	//"dockerFile": "../Dockerfile.dev",
 
 	// Use 'forwardPorts' to make a list of ports inside the container available locally.
 	// "forwardPorts": [],
@@ -17,7 +17,18 @@
 
 	// Uncomment when using a ptrace-based debugger like C++, Go, and Rust
 	// "runArgs": [ "--cap-add=SYS_PTRACE", "--security-opt", "seccomp=unconfined", "--network=chuck" ],
-	"runArgs": [ "--network=chuck" ]
+	"runArgs": [
+		"--network=square"
+	],
+	"dockerComposeFile": [
+		"..\\docker-compose.yml",
+		"docker-compose.yml"
+	],
+	"service": "my-app",
+	"workspaceFolder": "/workspace",
+	"customizations": {
+		"vscode": {}
+	}
 
 	// Uncomment to use the Docker CLI from inside the container. See https://aka.ms/vscode-remote/samples/docker-from-docker.
 	// "mounts": [ "source=/var/run/docker.sock,target=/var/run/docker.sock,type=bind" ],

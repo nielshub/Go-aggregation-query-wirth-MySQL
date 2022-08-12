@@ -1,0 +1,48 @@
+version: '3.7'
+services:
+  my-app:
+      build: .
+      ports:
+        - 8080:8080
+      networks:
+      - square
+  mysql-workbench: 
+    image: lscr.io/linuxserver/mysql-workbench:latest
+    container_name: mysql-workbench
+    environment:
+      - PUID=1000
+      - PGID=1000
+    volumes:
+      - /path/to/config:/config
+    ports:
+      - 3000:3000
+    networks:
+      - square
+    cap_add:
+      - IPC_LOCK
+    restart: unless-stopped
+  mysql:
+    image: mysql:5.7
+    restart: always
+    container_name: 'mysqlDB'
+    environment:
+      MYSQL_DATABASE: 'dataset'
+      MYSQL_USER: 'user'
+      MYSQL_PASSWORD: 'password'
+      MYSQL_ROOT_PASSWORD: 'password'
+    ports:
+      - '3306:3306'
+    expose:
+      - '3306'
+    networks:
+      - square
+    volumes:
+      - mysql-data:/var/lib/mysql
+  
+volumes:
+  mysql-data:
+    driver: local
+networks:
+  square:
+    name: square
+    driver: bridge
