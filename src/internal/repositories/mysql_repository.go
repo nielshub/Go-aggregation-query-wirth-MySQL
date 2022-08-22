@@ -39,3 +39,55 @@ func (mS *MySqlRepository) IngestFileData(ctx context.Context, path string) erro
 	}
 	return nil
 }
+
+func (mS *MySqlRepository) RemoveDuplicates(ctx context.Context) error {
+	_, err := mS.client.Exec(`
+		create temporary 
+			table dataset_copy (pk_id int);
+		`)
+	if err != nil {
+		return err
+	}
+	_, err = mS.client.Exec(`
+		insert into
+			dataset_copy (pk_id)
+		select
+			pk_id
+		from
+			dataset ds
+		where
+			exists (
+			select
+				*
+			from
+				dataset ds2
+			where
+				ds2.clientevent = ds.clientevent
+				and ds2.user_id = ds.user_id
+				and ds2.actiontimestamp = ds.actiontimestamp
+				and ds2.pk_id > ds.pk_id);
+		`)
+	if err != nil {
+		return err
+	}
+	_, err = mS.client.Exec(`
+		delete from 
+			dataset 
+		using 
+			dataset, dataset_copy where dataset.pk_id=dataset_copy.pk_id;`)
+	if err != nil {
+		return err
+	}
+	// _, err := mS.client.Exec("ALTER TABLE dataset ADD UNIQUE INDEX pk_id (user_id, actiontimestamp, clientevent);")
+	// if err != nil {
+	// 	return err
+	// }
+	return nil
+}
+
+/*DELETE c1 FROM tablename c1
+INNER JOIN tablename c2
+WHERE
+    c1.id > c2.id AND
+    c1.unique_field = c2.unique_field;
+*/
