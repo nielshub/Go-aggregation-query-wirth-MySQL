@@ -41,8 +41,9 @@ func (mS *MySqlRepository) CreateDataBaseAndTable() error {
 		pk_id INT AUTO_INCREMENT PRIMARY KEY,
 		user_id INT NOT NULL,
 		action_timestamp DATE NOT NULL,
-		client_event varchar(45) NOT NULL
-	)  ENGINE=INNODB;`)
+		client_event varchar(45) NOT NULL,
+		UNIQUE KEY unique_action (user_id,action_timestamp,client_event)
+	)  ENGINE=InnoDB;`)
 	if err != nil {
 		return err
 	}
@@ -51,7 +52,11 @@ func (mS *MySqlRepository) CreateDataBaseAndTable() error {
 
 func (mS *MySqlRepository) IngestFileData(ctx context.Context, path string) error {
 	mysql.RegisterLocalFile(path)
-	_, err := mS.client.Exec("LOAD DATA LOCAL INFILE '" + path + "' INTO TABLE dataset")
+	_, err := mS.client.Exec(`
+		LOAD DATA LOCAL INFILE '` + path + `' INTO TABLE dataset
+		FIELDS TERMINATED BY '\t' LINES TERMINATED BY '\n'
+		(user_id, action_timestamp, client_event)
+		;`)
 	if err != nil {
 		return err
 	}
@@ -96,16 +101,5 @@ func (mS *MySqlRepository) RemoveDuplicates(ctx context.Context) error {
 	if err != nil {
 		return err
 	}
-	// _, err := mS.client.Exec("ALTER TABLE dataset ADD UNIQUE INDEX pk_id (user_id, actiontimestamp, clientevent);")
-	// if err != nil {
-	// 	return err
-	// }
 	return nil
 }
-
-/*DELETE c1 FROM tablename c1
-INNER JOIN tablename c2
-WHERE
-    c1.id > c2.id AND
-    c1.unique_field = c2.unique_field;
-*/
