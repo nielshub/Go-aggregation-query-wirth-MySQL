@@ -5,6 +5,7 @@ import (
 	"contentSquare/src/internal/repositories"
 	"context"
 	"fmt"
+	"os"
 
 	"github.com/gin-gonic/gin"
 	"github.com/joho/godotenv"
@@ -16,11 +17,16 @@ func main() {
 		fmt.Println("Error loading env vars " + err.Error())
 	}
 	DBRepo := repositories.NewMySqlRepository()
-	// err = DBRepo.IngestFileData(context.Background(), os.Getenv("FILEPATH"))
-	// if err != nil {
-	// 	fmt.Println("Error loading file: " + err.Error())
-	// 	return
-	// }
+	err = DBRepo.CreateDataBaseAndTable()
+	if err != nil {
+		fmt.Println("Error creating DB and table: " + err.Error())
+		return
+	}
+	err = DBRepo.IngestFileData(context.Background(), os.Getenv("FILEPATH"))
+	if err != nil {
+		fmt.Println("Error loading file: " + err.Error())
+		return
+	}
 	err = DBRepo.RemoveDuplicates(context.Background())
 	if err != nil {
 		fmt.Println("Error removing duplicates: " + err.Error())

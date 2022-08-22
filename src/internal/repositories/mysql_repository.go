@@ -31,6 +31,24 @@ func CreateDBClient(ctx context.Context, driverName string) *sql.DB {
 	return client
 }
 
+func (mS *MySqlRepository) CreateDataBaseAndTable() error {
+	_, err := mS.client.Exec("CREATE DATABASE IF NOT EXISTS dataset")
+	if err != nil {
+		return err
+	}
+	_, err = mS.client.Exec(`
+	CREATE TABLE IF NOT EXISTS dataset (
+		pk_id INT AUTO_INCREMENT PRIMARY KEY,
+		user_id INT NOT NULL,
+		action_timestamp DATE NOT NULL,
+		client_event varchar(45) NOT NULL
+	)  ENGINE=INNODB;`)
+	if err != nil {
+		return err
+	}
+	return nil
+}
+
 func (mS *MySqlRepository) IngestFileData(ctx context.Context, path string) error {
 	mysql.RegisterLocalFile(path)
 	_, err := mS.client.Exec("LOAD DATA LOCAL INFILE '" + path + "' INTO TABLE dataset")
@@ -62,9 +80,9 @@ func (mS *MySqlRepository) RemoveDuplicates(ctx context.Context) error {
 			from
 				dataset ds2
 			where
-				ds2.clientevent = ds.clientevent
+				ds2.client_event = ds.client_event
 				and ds2.user_id = ds.user_id
-				and ds2.actiontimestamp = ds.actiontimestamp
+				and ds2.action_timestamp = ds.action_timestamp
 				and ds2.pk_id > ds.pk_id);
 		`)
 	if err != nil {
