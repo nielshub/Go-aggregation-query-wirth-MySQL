@@ -40,7 +40,7 @@ func (mS *MySqlRepository) CreateDataBaseAndTable() error {
 	CREATE TABLE IF NOT EXISTS dataset (
 		pk_id INT AUTO_INCREMENT PRIMARY KEY,
 		user_id INT NOT NULL,
-		action_timestamp DATE NOT NULL,
+		action_timestamp DATETIME NOT NULL,
 		client_event varchar(45) NOT NULL,
 		UNIQUE KEY unique_action (user_id,action_timestamp,client_event)
 	)  ENGINE=InnoDB;`)
