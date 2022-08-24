@@ -22,3 +22,7 @@ type Filters struct {
 type CountResponse struct {
 	Count string `json:"count"`
 }
+
+type CountDistinctUsersResponse struct {
+	CountDistinctUsers string `json:"count_distinct_users"`
+}

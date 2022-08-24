@@ -31,7 +31,7 @@ func main() {
 	r := gin.Default()
 	app := r.Group("/contentsquare")
 
-	//handlers.NewIngestHandler(app, DBRepo)
+	handlers.NewAggregateHandler(app, DBRepo)
 	handlers.NewHealthHandler(app)
 
 	err = r.Run(":8080")

@@ -6,6 +6,6 @@ import (
 )
 
 type DBRepository interface {
-	IngestFileData(context.Context, string) error
 	CountEvents(context.Context, models.Filters) (int64, error)
+	CountDistinctUsers(context.Context, models.Filters) (int64, error)
 }

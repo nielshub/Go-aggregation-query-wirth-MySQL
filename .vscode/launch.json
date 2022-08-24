@@ -9,7 +9,7 @@
             "type": "go",
             "request": "launch",
             "mode": "auto",
-            "program": "/workspaces/jwe-validator/src/cmd"
+            "program": "/workspace/src/cmd"
         }
     ]
 }

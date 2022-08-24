@@ -3,6 +3,7 @@ package handlers
 import (
 	"contentSquare/src/internal/models"
 	"contentSquare/src/internal/ports"
+	"fmt"
 	"net/http"
 	"strconv"
 
@@ -15,12 +16,13 @@ type AggregateHandler struct {
 }
 
 func NewAggregateHandler(app *gin.RouterGroup, DbRepo ports.DBRepository) *AggregateHandler {
-	h := &AggregateHandler{
+	aggregateAPI := &AggregateHandler{
 		router: app,
 		DbRepo: DbRepo,
 	}
-	h.router.GET("/count", h.countEventsWithFilter)
-	return h
+	aggregateAPI.router.GET("/count", aggregateAPI.countEventsWithFilter)
+	aggregateAPI.router.GET("/count_distinct_users", aggregateAPI.countDistinctUsersWithFilter)
+	return aggregateAPI
 }
 
 func (h *AggregateHandler) countEventsWithFilter(c *gin.Context) {
@@ -33,13 +35,34 @@ func (h *AggregateHandler) countEventsWithFilter(c *gin.Context) {
 
 	countValue, err := h.DbRepo.CountEvents(c, filters)
 	if err != nil {
-		//log.Logger.Error().Msgf("Error getting users. Error: %s", err)
-		c.AbortWithStatusJSON(http.StatusInternalServerError, gin.H{"message": "Error getting users"})
+		fmt.Printf("Error counting events. Error: %s \n", err)
+		c.AbortWithStatusJSON(http.StatusInternalServerError, gin.H{"message": "Error getting count values"})
 		return
 	}
 
 	response := models.CountResponse{
 		Count: strconv.Itoa(int(countValue)),
+	}
+
+	c.JSON(http.StatusOK, response)
+}
+
+func (h *AggregateHandler) countDistinctUsersWithFilter(c *gin.Context) {
+	filters := models.Filters{
+		DateFrom: c.Query("date_from"),
+		DateTo:   c.Query("date_to"),
+		Event:    c.Query("event"),
+	}
+
+	countValue, err := h.DbRepo.CountDistinctUsers(c, filters)
+	if err != nil {
+		fmt.Printf("Error counting distinct users. Error: %s \n", err)
+		c.AbortWithStatusJSON(http.StatusInternalServerError, gin.H{"message": "Error counting distinct users"})
+		return
+	}
+
+	response := models.CountDistinctUsersResponse{
+		CountDistinctUsers: strconv.Itoa(int(countValue)),
 	}
 
 	c.JSON(http.StatusOK, response)

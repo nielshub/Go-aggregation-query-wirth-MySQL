@@ -4,7 +4,7 @@ import (
 	"contentSquare/src/internal/models"
 	"context"
 	"database/sql"
-	"log"
+	"fmt"
 	"os"
 	"time"
 
@@ -67,19 +67,72 @@ func (mS *MySqlRepository) IngestFileData(ctx context.Context, path string) erro
 
 func (ms *MySqlRepository) CountEvents(ctx context.Context, filters models.Filters) (int64, error) {
 	var countValue int64
-	queryOutput, err := ms.client.Query(`
-	SELECT COUNT(*) FROM dataset
-	WHERE client_event = ` + filters.Event + `
-	AND user_id = "` + filters.UserId + `
-	AND action_timestamp BETWEEN CAST('` + filters.DateFrom + `' AS DATETIME) AND CAST('` + filters.DateTo + `' AS DATETIME);
-	`)
+	var query string
+
+	if filters.Event != "" && filters.UserId != "" {
+		query = `
+		SELECT COUNT(*) FROM dataset
+		WHERE client_event = '` + filters.Event + `'
+		AND user_id = '` + filters.UserId + `'
+		AND action_timestamp BETWEEN CAST('` + filters.DateFrom + `' AS DATETIME) AND CAST('` + filters.DateTo + `' AS DATETIME);
+		`
+	} else if filters.Event != "" && filters.UserId == "" {
+		query = `
+		SELECT COUNT(*) FROM dataset
+		WHERE client_event = '` + filters.Event + `'
+		AND action_timestamp BETWEEN CAST('` + filters.DateFrom + `' AS DATETIME) AND CAST('` + filters.DateTo + `' AS DATETIME);
+		`
+	} else if filters.UserId != "" && filters.Event == "" {
+		query = `
+		SELECT COUNT(*) FROM dataset
+		WHERE client_event = '` + filters.UserId + `'
+		AND action_timestamp BETWEEN CAST('` + filters.DateFrom + `' AS DATETIME) AND CAST('` + filters.DateTo + `' AS DATETIME);
+		`
+	} else if filters.UserId == "" && filters.Event == "" {
+		query = `
+		SELECT COUNT(*) FROM dataset
+		AND action_timestamp BETWEEN CAST('` + filters.DateFrom + `' AS DATETIME) AND CAST('` + filters.DateTo + `' AS DATETIME);
+		`
+	}
+	queryOutput, err := ms.client.Query(query)
 	if err != nil {
-		log.Fatal(err)
+		fmt.Printf("Error: %s \n", err)
 	}
 	defer queryOutput.Close()
+	for queryOutput.Next() {
+		if err := queryOutput.Scan(&countValue); err != nil {
+			fmt.Printf("Error: %s \n", err)
+		}
+	}
 
-	if err := queryOutput.Scan(&countValue); err != nil {
-		log.Fatal(err)
+	return countValue, nil
+}
+
+func (ms *MySqlRepository) CountDistinctUsers(ctx context.Context, filters models.Filters) (int64, error) {
+	var countValue int64
+	var query string
+
+	if filters.Event != "" {
+		query = `
+		SELECT COUNT(DISTINCT user_id) FROM dataset
+		WHERE client_event = '` + filters.Event + `'
+		AND action_timestamp BETWEEN CAST('` + filters.DateFrom + `' AS DATETIME) AND CAST('` + filters.DateTo + `' AS DATETIME);
+		`
+	} else if filters.Event == "" {
+		query = `
+		SELECT COUNT(DISTINCT user_id) FROM dataset
+		AND action_timestamp BETWEEN CAST('` + filters.DateFrom + `' AS DATETIME) AND CAST('` + filters.DateTo + `' AS DATETIME);
+		`
+	}
+	queryOutput, err := ms.client.Query(query)
+	if err != nil {
+		fmt.Printf("Error: %s \n", err)
+	}
+	defer queryOutput.Close()
+	for queryOutput.Next() {
+		if err := queryOutput.Scan(&countValue); err != nil {
+			fmt.Printf("Error: %s \n", err)
+		}
 	}
 
 	return countValue, nil
