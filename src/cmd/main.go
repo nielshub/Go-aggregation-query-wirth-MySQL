@@ -27,11 +27,6 @@ func main() {
 		fmt.Println("Error loading file: " + err.Error())
 		return
 	}
-	// err = DBRepo.RemoveDuplicates(context.Background())
-	// if err != nil {
-	// 	fmt.Println("Error removing duplicates: " + err.Error())
-	// 	return
-	// }
 
 	r := gin.Default()
 	app := r.Group("/contentsquare")

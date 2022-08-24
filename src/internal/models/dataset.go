@@ -18,3 +18,7 @@ type Filters struct {
 	DateTo   string
 	Event    string
 }
+
+type CountResponse struct {
+	Count string `json:"count"`
+}
