@@ -22,6 +22,7 @@ func NewAggregateHandler(app *gin.RouterGroup, DbRepo ports.DBRepository) *Aggre
 	}
 	aggregateAPI.router.GET("/count", aggregateAPI.countEventsWithFilter)
 	aggregateAPI.router.GET("/count_distinct_users", aggregateAPI.countDistinctUsersWithFilter)
+	aggregateAPI.router.GET("/exists", aggregateAPI.existsWithFilter)
 	return aggregateAPI
 }
 
@@ -63,6 +64,26 @@ func (h *AggregateHandler) countDistinctUsersWithFilter(c *gin.Context) {
 
 	response := models.CountDistinctUsersResponse{
 		CountDistinctUsers: strconv.Itoa(int(countValue)),
+	}
+
+	c.JSON(http.StatusOK, response)
+}
+
+func (h *AggregateHandler) existsWithFilter(c *gin.Context) {
+	filters := models.Filters{
+		UserId: c.Query("user_id"),
+		Event:  c.Query("event"),
+	}
+
+	exists, err := h.DbRepo.Exists(c, filters)
+	if err != nil {
+		fmt.Printf("Error getting exists query. Error: %s \n", err)
+		c.AbortWithStatusJSON(http.StatusInternalServerError, gin.H{"message": "Error getting exists query"})
+		return
+	}
+
+	response := models.ExistsResponse{
+		Exists: strconv.FormatBool(exists),
 	}
 
 	c.JSON(http.StatusOK, response)

@@ -4,6 +4,7 @@ import (
 	"contentSquare/src/internal/models"
 	"context"
 	"database/sql"
+	"errors"
 	"fmt"
 	"os"
 	"time"
@@ -136,6 +137,33 @@ func (ms *MySqlRepository) CountDistinctUsers(ctx context.Context, filters model
 	}
 
 	return countValue, nil
+}
+
+func (ms *MySqlRepository) Exists(ctx context.Context, filters models.Filters) (bool, error) {
+	var exists bool
+	var query string
+
+	if filters.Event != "" && filters.UserId != "" {
+		query = `
+		SELECT EXISTS(SELECT * FROM dataset
+		WHERE client_event = '` + filters.Event + `'
+		AND user_id = '` + filters.UserId + `');
+		`
+	} else {
+		return false, errors.New("Missing filter for exisits query")
+	}
+	queryOutput, err := ms.client.Query(query)
+	if err != nil {
+		fmt.Printf("Error: %s \n", err)
+	}
+	defer queryOutput.Close()
+	for queryOutput.Next() {
+		if err := queryOutput.Scan(&exists); err != nil {
+			fmt.Printf("Error: %s \n", err)
+		}
+	}
+
+	return exists, nil
 }
 
 func (mS *MySqlRepository) RemoveDuplicates(ctx context.Context) error {

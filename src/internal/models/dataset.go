@@ -26,3 +26,7 @@ type CountResponse struct {
 type CountDistinctUsersResponse struct {
 	CountDistinctUsers string `json:"count_distinct_users"`
 }
+
+type ExistsResponse struct {
+	Exists string `json:"exists"`
+}
