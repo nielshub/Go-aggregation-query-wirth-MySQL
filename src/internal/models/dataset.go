@@ -11,3 +11,10 @@ type Events struct {
 type Ingest struct {
 	Path string `json:"path"`
 }
+
+type Filters struct {
+	UserId   string
+	DateFrom string
+	DateTo   string
+	Event    string
+}

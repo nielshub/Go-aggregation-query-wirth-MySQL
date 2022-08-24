@@ -1,8 +1,10 @@
 package repositories
 
 import (
+	"contentSquare/src/internal/models"
 	"context"
 	"database/sql"
+	"log"
 	"os"
 	"time"
 
@@ -61,6 +63,26 @@ func (mS *MySqlRepository) IngestFileData(ctx context.Context, path string) erro
 		return err
 	}
 	return nil
+}
+
+func (ms *MySqlRepository) CountEvents(ctx context.Context, filters models.Filters) (int64, error) {
+	var countValue int64
+	queryOutput, err := ms.client.Query(`
+	SELECT COUNT(*) FROM dataset
+	WHERE client_event = ` + filters.Event + `
+	AND user_id = "` + filters.UserId + `
+	AND action_timestamp BETWEEN CAST('` + filters.DateFrom + `' AS DATETIME) AND CAST('` + filters.DateTo + `' AS DATETIME);
+	`)
+	if err != nil {
+		log.Fatal(err)
+	}
+	defer queryOutput.Close()
+
+	if err := queryOutput.Scan(&countValue); err != nil {
+		log.Fatal(err)
+	}
+
+	return countValue, nil
 }
 
 func (mS *MySqlRepository) RemoveDuplicates(ctx context.Context) error {
