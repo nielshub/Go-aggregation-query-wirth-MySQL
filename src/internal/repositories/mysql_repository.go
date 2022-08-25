@@ -41,8 +41,8 @@ func (mS *MySqlRepository) CreateDataBaseAndTable() error {
 	}
 	_, err = mS.client.Exec(`
 	CREATE TABLE IF NOT EXISTS dataset (
-		pk_id INT AUTO_INCREMENT PRIMARY KEY,
-		user_id INT NOT NULL,
+		pk_id BIGINT AUTO_INCREMENT PRIMARY KEY,
+		user_id BIGINT NOT NULL,
 		action_timestamp DATETIME NOT NULL,
 		client_event varchar(45) NOT NULL,
 		UNIQUE KEY unique_action (user_id,action_timestamp,client_event)
@@ -122,7 +122,7 @@ func (ms *MySqlRepository) CountDistinctUsers(ctx context.Context, filters model
 	} else if filters.Event == "" {
 		query = `
 		SELECT COUNT(DISTINCT user_id) FROM dataset
-		AND action_timestamp BETWEEN CAST('` + filters.DateFrom + `' AS DATETIME) AND CAST('` + filters.DateTo + `' AS DATETIME);
+		WHERE action_timestamp BETWEEN CAST('` + filters.DateFrom + `' AS DATETIME) AND CAST('` + filters.DateTo + `' AS DATETIME);
 		`
 	}
 	queryOutput, err := ms.client.Query(query)
