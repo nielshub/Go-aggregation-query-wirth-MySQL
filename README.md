@@ -24,6 +24,7 @@ FILEPATH = "./data.txt"
 - Ensure that the filepath is the correct one with the data file
 - Run following command in main folder of the repo: docker-compose up --build
 - In order to run the test manually in console run: go test -v ./...
+- In order to check MySQL via workbench GUI if needed connect to: http://localhost:3000 user = root / password = password
 - Postman collection has been done, please see attached in the repository. In order to make it work you can:
   - Check health
   - Count events
