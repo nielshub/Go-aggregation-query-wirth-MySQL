@@ -6,26 +6,30 @@ import (
 	"context"
 	"fmt"
 	"os"
+	"time"
 
 	"github.com/gin-gonic/gin"
 	"github.com/joho/godotenv"
 )
 
 func main() {
-	err := godotenv.Load("../../env/variables.env")
+	err := godotenv.Load("./env/variables.env")
 	if err != nil {
 		fmt.Println("Error loading env vars " + err.Error())
 	}
+	fmt.Println("env vars have been loaded...")
+
+	time.Sleep(5000 * time.Millisecond)
+
 	DBRepo := repositories.NewMySqlRepository()
 	err = DBRepo.CreateDataBaseAndTable()
 	if err != nil {
 		fmt.Println("Error creating DB and table: " + err.Error())
-		return
 	}
+
 	err = DBRepo.IngestFileData(context.Background(), os.Getenv("FILEPATH"))
 	if err != nil {
 		fmt.Println("Error loading file: " + err.Error())
-		return
 	}
 
 	r := gin.Default()

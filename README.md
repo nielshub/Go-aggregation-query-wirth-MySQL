@@ -18,7 +18,7 @@ All endpoints have been created and tested with the data.txt file given and prop
 MYSQL_DSN = "user:password@tcp(mysqlDB:3306)/dataset"
 VERSION = "1.0"
 ENV = "LOCAL"
-FILEPATH = "/workspace/data.txt"
+FILEPATH = "./data.txt"
 ```
 
 - Ensure that the filepath is the correct one with the data file

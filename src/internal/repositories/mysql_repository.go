@@ -26,7 +26,7 @@ func NewMySqlRepository() *MySqlRepository {
 func CreateDBClient(ctx context.Context, driverName string) *sql.DB {
 	client, err := sql.Open(driverName, os.Getenv("MYSQL_DSN"))
 	if err != nil {
-		panic(err)
+		fmt.Println(err)
 	}
 	client.SetConnMaxLifetime(time.Minute * 3)
 	client.SetMaxOpenConns(10)
